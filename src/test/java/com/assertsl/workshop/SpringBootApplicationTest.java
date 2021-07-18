@@ -1,4 +1,4 @@
-package com.assert.workshop;
+package com.assertsl.workshop;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 @CamelSpringBootTest
-public class MySpringBootApplicationTest {
+public class SpringBootApplicationTest {
 
 	@Autowired
 	private CamelContext camelContext;

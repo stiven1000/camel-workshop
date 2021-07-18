@@ -1,4 +1,4 @@
-package com.assert.workshop;
+package com.assertsl.workshop.beans;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
