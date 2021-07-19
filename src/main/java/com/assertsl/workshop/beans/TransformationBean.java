@@ -1,13 +1,13 @@
 package com.assertsl.workshop.beans;
 
 import com.assertsl.workshop.dto.DrugDto;
-import com.sun.xml.internal.messaging.saaj.packaging.mime.MessagingException;
-import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.MimeBodyPart;
 import org.apache.camel.Exchange;
 import org.apache.camel.Header;
 import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeBodyPart;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -30,7 +30,7 @@ public class TransformationBean {
     }
 
 
-    public void readContentRequest(Exchange exchange) throws MessagingException, IOException {
+    public void readContentRequest(Exchange exchange) throws IOException, MessagingException {
         InputStream is = exchange.getIn().getBody(InputStream.class);
         MimeBodyPart mimeMessage = new MimeBodyPart(is);
         DataHandler dh = mimeMessage.getDataHandler();
