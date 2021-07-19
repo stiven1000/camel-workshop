@@ -29,7 +29,6 @@ public class TransformationBean {
         return updateParameters;
     }
 
-
     public void readContentRequest(Exchange exchange) throws IOException, MessagingException {
         InputStream is = exchange.getIn().getBody(InputStream.class);
         MimeBodyPart mimeMessage = new MimeBodyPart(is);
