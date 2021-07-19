@@ -82,12 +82,12 @@ public class TransformationRoute extends RouteBuilder {
                 .log("Uploading Pdf File")
                 .bean("transformationBean","readContentRequest")
                 .to("file:"+ pdfDirectory)
-                .setBody(constant("File Upload successfully ${headers.CamelFileName}"))
+                .setBody(simple("File Upload successfully ${headers.CamelFileName}"))
                 .end();
 
         from("direct:downloadPdf")
                 .log("Downloading File ${headers.filename}")
-                .pollEnrich("file:"+ pdfDirectory + "?fileName=${headers.filename}&noop=true&idempotent=false", 5000)
+                .pollEnrich().simple("file:"+ pdfDirectory + "?fileName=${headers.filename}&noop=true&idempotent=false").timeout(5000)
                 .log("sending back to response")
                 .end();
 
