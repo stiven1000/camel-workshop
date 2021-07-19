@@ -8,6 +8,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,6 +19,9 @@ public class TransformationRoute extends RouteBuilder {
 
     @Autowired
     private FdaEnricher fdaEnricher;
+
+    @Value("${camel-workshop.uploadDirectory}")
+    private String pdfDirectory;
 
     @Override
     public void configure() throws Exception {
@@ -71,6 +75,20 @@ public class TransformationRoute extends RouteBuilder {
                 .setHeader("packageDescription", jsonpath("$.results[0].packaging[0].description"))
                 //TODO: get genericName and labelerName fields
                 .log("Info obtained packageDescription: ${headers.packageDescription}, labelerName: ${headers.labelerName}, genericName: ${headers.genericName}")
+                .end();
+
+
+        from("direct:uploadPdf")
+                .log("Uploading Pdf File")
+                .bean("transformationBean","readContentRequest")
+                .to("file:"+ pdfDirectory)
+                .setBody(constant("File Upload successfully ${headers.CamelFileName}"))
+                .end();
+
+        from("direct:downloadPdf")
+                .log("Downloading File ${headers.filename}")
+                .pollEnrich("file:"+ pdfDirectory + "?fileName=${headers.filename}&noop=true&idempotent=false", 5000)
+                .log("sending back to response")
                 .end();
 
 

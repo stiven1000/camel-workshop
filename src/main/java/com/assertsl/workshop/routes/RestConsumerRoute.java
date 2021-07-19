@@ -41,7 +41,16 @@ public class RestConsumerRoute extends RouteBuilder {
                 .delete("/{ncdCode}").consumes("application/json").outType(DrugStore.class).description("Disable drug")
                 .param().name("ncdCode").type(RestParamType.path).description("The drug ncd code").dataType("string").endParam()
                 .responseMessage().code(200).message("operation executed successfully").endResponseMessage()
-                .to("direct:disableDrug");
+                .to("direct:disableDrug")
+
+                .post("/uploadPdf").bindingMode(RestBindingMode.off).consumes("multipart/form-data").description("Upload pdf invoice for drug")
+                .responseMessage().code(200).message("operation executed successfully").endResponseMessage()
+                .to("direct:uploadPdf")
+
+                .get("/getPdf/{filename}").bindingMode(RestBindingMode.off).produces("multipart/form-data").description("Download pdf invoice for drug")
+                .param().name("filename").type(RestParamType.path).description("File name to download").dataType("string").endParam()
+                .responseMessage().code(200).message("operation executed successfully").endResponseMessage()
+                .to("direct:downloadPdf");
 
 
     }
