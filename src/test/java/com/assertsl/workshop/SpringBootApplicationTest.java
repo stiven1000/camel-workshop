@@ -1,19 +1,27 @@
 package com.assertsl.workshop;
 
-import jdk.nashorn.internal.ir.annotations.Ignore;
+import com.assertsl.workshop.dto.DrugDto;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
 import org.junit.jupiter.api.Test;
-
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@SpringBootTest
-@CamelSpringBootTest
+import static org.assertj.core.api.Assertions.assertThat;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class SpringBootApplicationTest {
+
+	@Autowired
+	private TestRestTemplate restTemplate;
 
 	@Autowired
 	private CamelContext camelContext;
@@ -22,31 +30,38 @@ public class SpringBootApplicationTest {
 	private ProducerTemplate producerTemplate;
 
 	@Test
+	public void restDsl() {
+		// Call the REST API
+		ResponseEntity<String> response = restTemplate.getForEntity("/store/drug/all", String.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+	}
 
-	public void test() throws Exception {
-		/*
-		MockEndpoint mock = camelContext.getEndpoint("mock:stream:out", MockEndpoint.class);
+	@Test
+	public void createDrugRouteTest() throws Exception {
 
-		AdviceWith.adviceWith(camelContext, "hello",
+		MockEndpoint mock = camelContext.getEndpoint("mock:finishRoute", MockEndpoint.class);
+
+		AdviceWith.adviceWith(camelContext, "createDrugRoute",
 				// intercepting an exchange on route
 				r -> {
-					// replacing consumer with direct component
-					r.replaceFromWith("direct:start");
-					// mocking producer
-					r.mockEndpoints("stream*");
+					r.weaveAddLast().to(mock);
 				}
 		);
 
 		// setting expectations
 		mock.expectedMessageCount(1);
-		mock.expectedBodiesReceived("Hello World");
+
+		DrugDto dto = new DrugDto();
+		dto.setProductNdc("69618-010");
 
 		// invoking consumer
-		producerTemplate.sendBody("direct:start", null);
+		producerTemplate.sendBody("direct:createDrug", dto);
 
 		// asserting mock is satisfied
 		mock.assertIsSatisfied();
 
-		 */
+
 	}
+
+
 }

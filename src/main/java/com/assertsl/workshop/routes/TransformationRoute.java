@@ -34,36 +34,37 @@ public class TransformationRoute extends RouteBuilder {
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(502)) //BAD GATEWAY
                 .end();
 
-        from("direct:getAllDrugs")
+        from("direct:getAllDrugs").routeId("getAllDrugsRoute")
                 .log("get all drugs")
                 .to("jpa:com.assertsl.workshop.domain.DrugStore?query=" + databaseProperties.getGetAllDrugs())
                 .end();
 
-        from("direct:getDrug")
+        from("direct:getDrug").routeId("getDrugRoute")
                 .log("get drug ${headers.ncdCode}")
                 .setHeader("CamelJpaParameters", method("transformationBean","getDrugParameters"))
                 .to("jpa:com.assertsl.workshop.domain.DrugStore?query=" + databaseProperties.getGetDrug())
                 .end();
-        from("direct:createDrug")
+
+        from("direct:createDrug").routeId("createDrugRoute")
                 .log("creating drug")
                 .enrich("direct:getDrugInformation", fdaEnricher)
                 .to("jpa:com.assertsl.workshop.domain.DrugStore")
-
                 .end();
-        from("direct:updateDrug")
+
+        from("direct:updateDrug").routeId("updateDrugRoute")
                 .log("updating drug")
                 .setHeader("CamelJpaParameters", method("transformationBean","updateDrugParameters"))
                 .to("jpa:com.assertsl.workshop.domain.DrugStore?useExecuteUpdate=true&query=" + databaseProperties.getUpdateDrug())
                 .end();
 
-        from("direct:disableDrug")
+        from("direct:disableDrug").routeId("disableDrugRoute")
                 .log("disabling drug ${headers.ncdCode}")
                 //TODO: Update the drug with INACTIVE status
                 .to("jpa:com.assertsl.workshop.domain.DrugStore")
                 .end();
 
 
-        from("direct:getDrugInformation")
+        from("direct:getDrugInformation").routeId("getDrugInformationRoute")
                 .log("Getting drug Information from FDA API")
                 .setHeader(Exchange.HTTP_QUERY, simple("search=product_ndc:${body.productNdc}"))
                 .setHeader(Exchange.HTTP_URI,  constant("https://api.fda.gov/drug/ndc.json"))
@@ -78,14 +79,14 @@ public class TransformationRoute extends RouteBuilder {
                 .end();
 
 
-        from("direct:uploadPdf")
+        from("direct:uploadPdf").routeId("uploadPdfRoute")
                 .log("Uploading Pdf File")
                 .bean("transformationBean","readContentRequest")
                 .to("file:"+ pdfDirectory)
                 .setBody(simple("File Upload successfully ${headers.CamelFileName}"))
                 .end();
 
-        from("direct:downloadPdf")
+        from("direct:downloadPdf").routeId("downloadPdfRoute")
                 .log("Downloading File ${headers.filename}")
                 .pollEnrich().simple("file:"+ pdfDirectory + "?fileName=${headers.filename}&noop=true&idempotent=false").timeout(5000)
                 .log("sending back to response")

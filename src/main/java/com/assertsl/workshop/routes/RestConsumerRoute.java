@@ -13,6 +13,7 @@ public class RestConsumerRoute extends RouteBuilder {
     @Override
     public void configure() {
         getContext().setStreamCaching(true);
+        getContext().setUseMDCLogging(true);
 
         restConfiguration()
                 .bindingMode(RestBindingMode.json)
