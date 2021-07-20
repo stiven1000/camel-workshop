@@ -19,7 +19,7 @@ class TestStringMethods(unittest.TestCase):
         pload = '{"productNdc":"69618-010","price":561121,"existences":20,"status":"ACTIVE"}'
         r = requests.post(url + "/store/drug/create", data=pload)
         print(r.text)
-        self.assertEqual(r.status_code, 200, 'the service should respond with 200 success code')
+        self.assertEqual(r.status_code, 200, 'the service create should respond with 200 success code')
         response = r.json()
         self.assertIsNotNone(response['productNdc'], 'there should be the identifier')
         self.assertIsNotNone(response['genericName'], 'there should be the generic name field')
@@ -34,10 +34,13 @@ class TestStringMethods(unittest.TestCase):
         pload = '{"productNdc":"69618-010","price":512,"existences":10,"status":"ACTIVE"}'
         r = requests.put(url + "/store/drug/update", data=pload)
         print(r.text)
-        self.assertEqual(r.status_code, 200, 'the service should respond with 200 success code')
+        self.assertEqual(r.status_code, 200, 'the service update should respond with 200 success code')
+        r = requests.get(url + "/store/drug/69618-010")
+        print(r.text)
+        self.assertEqual(r.status_code, 200, 'the service get drug should respond with 200 success code')
         response = r.json()
-        self.assertEqual(response['price'], '512', 'the price must be updated')
-        self.assertEqual(response['existences'], '10', 'the existence must be updated')
+        self.assertEqual(response[0]['price'], 512, 'the price must be updated')
+        self.assertEqual(response[0]['existences'], 10, 'the existence must be updated')
 
     # Update the drug with INACTIVE status
     def test_3_disable(self):
@@ -46,12 +49,12 @@ class TestStringMethods(unittest.TestCase):
         url = config.get('baseUrl', 'url')
         r = requests.delete(url + "/store/drug/69618-010")
         print(r.text)
-        self.assertEqual(r.status_code, 200, 'the service should respond with 200 success code')
+        self.assertEqual(r.status_code, 200, 'the service disable should respond with 200 success code')
         r = requests.get(url + "/store/drug/69618-010")
         print(r.text)
-        self.assertEqual(r.status_code, 200, 'the service should respond with 200 success code')
+        self.assertEqual(r.status_code, 200, 'the service get drug should respond with 200 success code')
         response = r.json()
-        self.assertEqual(response['status'], 'INACTIVE', 'the status should be updated to INACTIVE')
+        self.assertEqual(response[0]['status'], 'INACTIVE', 'the status should be updated to INACTIVE')
 
     def test_4_uploadfile(self):
         config = configparser.ConfigParser()
@@ -65,7 +68,7 @@ class TestStringMethods(unittest.TestCase):
             files = {'upload_file': (str(filename) + ".pdf", data)}
             r = requests.post(url + "/store/drug/uploadPdf", files=files)
             print(r.text)
-            self.assertEqual(r.status_code, 200, 'the service should respond with 200 success code')
+            self.assertEqual(r.status_code, 200, 'the service upload file should respond with 200 success code')
 
     # Use a Database for persistent storage
     #@unittest.skip
@@ -97,13 +100,13 @@ class TestStringMethods(unittest.TestCase):
         url = config.get('baseUrl', 'url')
         r = requests.get(url + "/store/drug/69618-010")
         print(r.text)
-        self.assertEqual(r.status_code, 200, 'the service should respond with 200 success code')
+        self.assertEqual(r.status_code, 200, 'the service get drug should respond with 200 success code')
         response = r.json()
         self.assertTrue(response, "the response must not be empty")
-        self.assertEqual(response['productNdc'], '69618-010', 'the identifier should be the same from request')
-        self.assertIsNotNone(response['genericName'], 'there should be the generic name field')
-        self.assertIsNotNone(response['packageDescription'], 'there should be the package description')
-        self.assertIsNotNone(response['labelerName'], 'there should be the labelerName')
+        self.assertEqual(response[0]['productNdc'], '69618-010', 'the identifier should be the same from request')
+        self.assertIsNotNone(response[0]['genericName'], 'there should be the generic name field')
+        self.assertIsNotNone(response[0]['packageDescription'], 'there should be the package description')
+        self.assertIsNotNone(response[0]['labelerName'], 'there should be the labelerName')
 
     # use pvc to store
     def test_6_downloadFile(self):
@@ -114,7 +117,7 @@ class TestStringMethods(unittest.TestCase):
         filename = randint(100000, 900000)
         print("file to be downloaded", str(filename) + ".pdf")
         response = requests.get(url + "/store/drug/getPdf/"+ str(filename) + ".pdf")
-        self.assertEqual(response.status_code, 200, 'the service should respond with 200 success code')
+        self.assertEqual(response.status_code, 200, 'the service download pdf should respond with 200 success code')
         self.assertTrue(response, "the response must not be empty")
 
 
