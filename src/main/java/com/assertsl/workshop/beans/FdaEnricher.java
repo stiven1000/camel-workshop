@@ -11,17 +11,19 @@ public class FdaEnricher implements AggregationStrategy {
 
     @Override
     public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-        DrugDto drugDto = oldExchange.getIn().getBody(DrugDto.class);
-        DrugStore drugStore = new DrugStore();
 
-        drugStore.setProductNdc(drugDto.getProductNdc());
-        drugStore.setExistences(drugDto.getExistences());
-        drugStore.setPrice(drugDto.getPrice());
+        if (newExchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class) == 200) {
+            DrugDto drugDto = oldExchange.getIn().getBody(DrugDto.class);
+            DrugStore drugStore = new DrugStore();
 
-        //TODO: set fields packageDescription labelerName genericName returned by the query to drugStore
+            drugStore.setProductNdc(drugDto.getProductNdc());
+            drugStore.setExistences(drugDto.getExistences());
+            drugStore.setPrice(drugDto.getPrice());
 
+            //TODO: set fields packageDescription labelerName genericName returned by the query to drugStore
 
-        oldExchange.getIn().setBody(drugStore);
-        return oldExchange;
+            newExchange.getIn().setBody(drugStore);
+        }
+        return newExchange;
     }
 }
