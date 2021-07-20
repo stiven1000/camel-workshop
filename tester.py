@@ -116,8 +116,6 @@ class TestStringMethods(unittest.TestCase):
         response = requests.get(url + "/store/drug/getPdf/"+ str(filename) + ".pdf")
         self.assertEqual(response.status_code, 200, 'the service should respond with 200 success code')
         self.assertTrue(response, "the response must not be empty")
-        
-
 
 
 if __name__ == '__main__':

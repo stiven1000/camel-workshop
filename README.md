@@ -39,3 +39,8 @@
 ### setting limits
     
     oc set resources deployment camel-workshop --limits=cpu=1,memory=256Mi
+
+
+### setting environment variables and secrets
+
+    oc set env --help
