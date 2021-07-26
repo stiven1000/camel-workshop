@@ -1,0 +1,7 @@
+Workshop Assesment
+
+Full Name:
+Email:
+Route Application Url:
+Cluster Api Url: https://api.shared-na46.openshift.opentlc.com:6443/
+Account Token:
