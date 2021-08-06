@@ -28,7 +28,11 @@
 ### Creating service accounts
 
     oc create sa robot
-	oc policy add-role-to-user edit system:serviceaccount:username-camel:robot
+    oc policy add-role-to-user edit system:serviceaccount:[namespace]:robot
+
+example
+
+	oc policy add-role-to-user edit system:serviceaccount:my-project:robot
 	oc describe secret robot-token-2w64j
 		
 ### creating liveness and readiness probes
