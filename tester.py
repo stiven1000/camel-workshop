@@ -77,14 +77,16 @@ class TestStringMethods(unittest.TestCase):
         config = configparser.ConfigParser()
         config.read("test.ini")
         # restart the application
+        appType = config.get('openshift','app-type')
+
         process = subprocess.run(['oc', 'login', config.get('openshift','url'), '--token', config.get('openshift', 'account_token')],
                                    universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print(process.stdout)
-        process = subprocess.run(['oc', 'scale', '--replicas=0', 'deployment/' + config.get('openshift','deployment')],
-                                   universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         time.sleep(30)
+        process = subprocess.run(['oc', 'scale', '--replicas=0', appType + '/' + config.get('openshift','deployment')],
+                                   universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print(process.stdout)
-        process = subprocess.run(['oc', 'scale', '--replicas=1', 'deployment/' + config.get('openshift','deployment')],
+        process = subprocess.run(['oc', 'scale', '--replicas=1', appType + '/' + config.get('openshift','deployment')],
                                    universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print(process.stdout)
 
@@ -93,7 +95,7 @@ class TestStringMethods(unittest.TestCase):
         readyReplicas = 0
         while readyReplicas == 0 or readyReplicas == '' or readyReplicas is None:
             time.sleep(15)
-            process = subprocess.run(['oc', 'get', 'deployment/' + config.get('openshift','deployment'),'-o', 'jsonpath={.status.readyReplicas}'],
+            process = subprocess.run(['oc', 'get', appType + '/' + config.get('openshift','deployment'),'-o', 'jsonpath={.status.readyReplicas}'],
                                        universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             print('replicas:',process.stdout)
             readyReplicas = process.stdout
