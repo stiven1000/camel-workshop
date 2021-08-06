@@ -82,6 +82,7 @@ class TestStringMethods(unittest.TestCase):
         print(process.stdout)
         process = subprocess.run(['oc', 'scale', '--replicas=0', 'deployment/' + config.get('openshift','deployment')],
                                    universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        time.sleep(30)
         print(process.stdout)
         process = subprocess.run(['oc', 'scale', '--replicas=1', 'deployment/' + config.get('openshift','deployment')],
                                    universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
