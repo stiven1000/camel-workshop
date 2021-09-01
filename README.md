@@ -56,3 +56,17 @@ example
 ### setting persistent volumes
 
     oc set volume --help
+
+
+### Testing this App
+
+For testing this App you can use the tester.py application and deploy using the new-app command:
+
+     oc new-app --name=camel-tester https://github.com/jorgecastro05/camel-workshop.git --context-dir=testerApp
+
+This create a new app with name camel-tester and builds the aplication with Dockerfile inside the folder.
+Then you can expose the new app created
+
+    oc expose svc camel-tester
+
+And navigate with a web browser at url created, this exposes a swagger UI for test the application, where you can use the openshift url, application name, and token for accesing the cluster.
