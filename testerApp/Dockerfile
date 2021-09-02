@@ -12,4 +12,4 @@ RUN chown -R 0 /app && \
     chmod -R g=u /app
 EXPOSE 8080
 USER 1001
-CMD [ "python3", "-m" , "uvicorn", "tester:app", "--host=0.0.0.0", "--port=8080"]
+CMD [ "python3", "-m" , "uvicorn", "tester:app", "--host=0.0.0.0", "--port=8080", "--timeout-keep-alive=300"]
