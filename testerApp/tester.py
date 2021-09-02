@@ -9,9 +9,17 @@ from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
 from starlette.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 import openshift as oc
 
 app = FastAPI(title="Camel Workshop tester App")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Request(BaseModel):
     baseUrl: str
