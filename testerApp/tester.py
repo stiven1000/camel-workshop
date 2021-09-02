@@ -123,25 +123,27 @@ def test_5_persistent_database(request: Request):
     openshiftUrl = request.openshiftUrl
 
     try:
-        process = subprocess.run(['oc', 'login', openshiftUrl, '--token', accountToken],
+        print("login into openshift cluster")
+        process = subprocess.run(['oc', 'login', openshiftUrl, '--token=' + accountToken, '--insecure-skip-tls-verify=true'],
                                    universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
         print("oc login result: " + process.stdout)
         if process.returncode > 1 or process.stdout == '':
-            return 'there was an error login into cluster ' +  process.stdout
+            return 'there was an error login into cluster ' + process.stdout + process.stderr
 
         process = subprocess.run(['oc', 'scale', '--replicas=0', appType + '/' + deployment],
                                    universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
         print("oc scale 0 result: " + process.stdout)
         if process.returncode > 1 or process.stdout == '':
-            return 'there was an error scaling application to zero replicas ' +  process.stdout
-
+            return 'there was an error scaling application to zero replicas ' +  process.stdout + process.stderr
+        print("waiting 30 seconds to application scales down successfully")
         time.sleep(30)
 
         process = subprocess.run(['oc', 'scale', '--replicas=1', appType + '/' + deployment],
                                    universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
         print("oc scale 1 result: " + process.stdout)
+        print("waiting to application to startup successfully")
         if process.returncode > 1 or process.stdout == '':
-            return 'there was an error scaling application to one replicas ' +  process.stdout
+            return 'there was an error scaling application to one replicas ' +  process.stdout + process.stderr
 
         #oc get deployment camel-workshop -o jsonpath={.status.readyReplicas}
         
@@ -152,7 +154,7 @@ def test_5_persistent_database(request: Request):
             process = subprocess.run(['oc', 'get', appType + '/' + deployment,'-o', 'jsonpath={.status.readyReplicas}'],
                                        universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
             if process.returncode > 1:
-                return 'there was an error getting the current replicas for deployment ' +  process.stdout
+                return 'there was an error getting the current replicas for deployment ' +  process.stdout + process.stderr
             print('replicas: ',process.stdout, 'retries: ', retriesCount)
             readyReplicas = process.stdout
             if retriesCount == 6:
@@ -162,13 +164,13 @@ def test_5_persistent_database(request: Request):
     except subprocess.TimeoutExpired as e: 
         return 'there was an connection error to Openshift ' +  str(e)
             
-    url = config.get('baseUrl', 'url')
+    url = request.baseUrl
     r = requests.get(url + "/store/drug/69618-010")
     print("database get response: ", r.text)
     if r.status_code != 200:
         return 'the service get drug should respond with 200 success code, response: ' + str(r.status_code)
     response = r.json()
-    if response != "":
+    if response == "":
         return "the response must not be empty"
     if response[0]['productNdc'] != '69618-010': 
         return 'the identifier should be the same from request'
