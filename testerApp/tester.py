@@ -137,9 +137,9 @@ def test_5_persistent_database(request: Request):
                 with oc.tls_verify(enable=False):
                     print("Using openshift server", openshiftUrl)
                     dc = oc.selector(appType + "/" + deployment).object()
-                    print("Scaling to zero", dc.name(), "in project", oc.get_project_name())
+                    print("Scaling to zero", dc.name())
                     oc.invoke('scale', ['--replicas=0', 'dc/' + dc.name()])
-                    print("Scaling to one", dc.name(), "in project", oc.get_project_name())
+                    print("Scaling to one", dc.name())
                     oc.invoke('scale', ['--replicas=1', 'dc/' + dc.name()])
                     dc.refresh() #get updated dc with latest version
                     print("Waiting for up to", timeout, "seconds for application", dc.name(), "to be ready")
