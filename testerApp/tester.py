@@ -131,7 +131,7 @@ def test_5_persistent_database(request: Request):
             return 'there was an error login into cluster ' + process.stdout + process.stderr
 
         process = subprocess.run(['oc', 'scale', '--replicas=0', appType + '/' + deployment],
-                                   universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20)
+                                   universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
         print("oc scale 0 result: " + process.stdout)
         if process.returncode > 1 or process.stdout == '':
             return 'there was an error scaling application to zero replicas ' +  process.stdout + process.stderr
@@ -139,7 +139,7 @@ def test_5_persistent_database(request: Request):
         time.sleep(30)
 
         process = subprocess.run(['oc', 'scale', '--replicas=1', appType + '/' + deployment],
-                                   universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20)
+                                   universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
         print("oc scale 1 result: " + process.stdout)
         print("waiting to application to startup successfully")
         if process.returncode > 1 or process.stdout == '':
