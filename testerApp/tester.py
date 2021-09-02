@@ -51,7 +51,7 @@ def test_app(request: Request):
     response['test_update_drug'] = test_2_update(request)
     response['test_disable_drug'] = test_3_disable(request)
     response['test_upload_file'] = test_4_uploadfile(request)
-    response['test_persistent_database'] = test_5_persistent_database(request)
+    #response['test_persistent_database'] = test_5_persistent_database(request)
     response['test_download_file'] = test_6_downloadFile(request)
     return response
 
@@ -158,47 +158,6 @@ def test_5_persistent_database(request: Request):
     except oc.model.OpenShiftPythonException as e:
         return 'there was an connection error to Openshift ' +  str(e)
 
-    #     print("login into openshift cluster")
-    #     process = subprocess.run(['oc', 'login', openshiftUrl, '--token=' + accountToken, '--insecure-skip-tls-verify=true'],
-    #                                universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
-    #     print("oc login result: " + process.stdout)
-    #     if process.returncode > 1 or process.stdout == '':
-    #         return 'there was an error login into cluster ' + process.stdout + process.stderr
-
-    #     process = subprocess.run(['oc', 'scale', '--replicas=0', appType + '/' + deployment],
-    #                                universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
-    #     print("oc scale 0 result: " + process.stdout)
-    #     if process.returncode > 1 or process.stdout == '':
-    #         return 'there was an error scaling application to zero replicas ' +  process.stdout + process.stderr
-    #     print("waiting 30 seconds to application scales down successfully")
-    #     time.sleep(30)
-
-    #     process = subprocess.run(['oc', 'scale', '--replicas=1', appType + '/' + deployment],
-    #                                universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
-    #     print("oc scale 1 result: " + process.stdout)
-    #     print("waiting to application to startup successfully")
-    #     if process.returncode > 1 or process.stdout == '':
-    #         return 'there was an error scaling application to one replicas ' +  process.stdout + process.stderr
-
-    #     #oc get deployment camel-workshop -o jsonpath={.status.readyReplicas}
-        
-    #     readyReplicas = 0
-    #     retriesCount = 0
-    #     while readyReplicas == 0 or readyReplicas == '' or readyReplicas is None:
-    #         time.sleep(15)
-    #         process = subprocess.run(['oc', 'get', appType + '/' + deployment,'-o', 'jsonpath={.status.readyReplicas}'],
-    #                                    universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=15)
-    #         if process.returncode > 1:
-    #             return 'there was an error getting the current replicas for deployment ' +  process.stdout + process.stderr
-    #         print('replicas: ',process.stdout, 'retries: ', retriesCount)
-    #         readyReplicas = process.stdout
-    #         if retriesCount == 6:
-    #             return 'timeout expired for scaling application to 1 replica (90 seg)'
-    #         retriesCount+=1
-
-    # except subprocess.TimeoutExpired as e: 
-    #     return 'there was an connection error to Openshift ' +  str(e)
-            
     url = request.baseUrl
     r = requests.get(url + "/store/drug/69618-010")
     print("database get response: ", r.text)
