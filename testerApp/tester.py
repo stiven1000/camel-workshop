@@ -51,7 +51,7 @@ def test_app(request: Request):
     response['test_update_drug'] = test_2_update(request)
     response['test_disable_drug'] = test_3_disable(request)
     response['test_upload_file'] = test_4_uploadfile(request)
-    #response['test_persistent_database'] = test_5_persistent_database(request)
+    response['test_persistent_database'] = test_5_persistent_database(request)
     response['test_download_file'] = test_6_downloadFile(request)
     return response
 
@@ -136,8 +136,6 @@ def test_5_persistent_database(request: Request):
     accountToken = request.accountToken
     deployment = request.deployment
     openshiftUrl = request.openshiftUrl
-    # seconds
-    timeout=90
 
     try:
         with oc.api_server(openshiftUrl):
@@ -145,36 +143,74 @@ def test_5_persistent_database(request: Request):
                 with oc.tls_verify(enable=False):
                     print("Using openshift server", openshiftUrl)
                     dc = oc.selector(appType + "/" + deployment).object()
-                    print("Scaling to zero", dc.name())
-                    oc.invoke('scale', ['--replicas=0', 'dc/' + dc.name()])
-                    print("Scaling to one", dc.name())
-                    oc.invoke('scale', ['--replicas=1', 'dc/' + dc.name()])
-                    dc.refresh() #get updated dc with latest version
-                    print("Waiting for up to", timeout, "seconds for application", dc.name(), "to be ready")
-                    with oc.timeout(timeout):
-                        dc = oc.selector(appType + "/" + deployment)
-                        dc.until_all(1, success_func=dc_is_ready)
-                    print("finished rollout for", deployment)
+                    envs = dc.model.spec.template.spec.containers[0].env
+                    envNames = []
+                    for env in envs:
+                        envNames.append(env['name'])
+                    print("enviroment variables:",envNames)
+                    if 'DATABASE_DRIVER' not in envNames:
+                        return 'there should be the DATABASE_DRIVER env in application'
+                    if 'DATABASE_URL' not in envNames:
+                        return 'there should be the DATABASE_URL env in application'
+                    if 'DATABASE_USERNAME' not in envNames:
+                        return 'there should be the DATABASE_USERNAME env in application'
+                    if 'DATABASE_PASSWORD' not in envNames:
+                        return 'there should be the DATABASE_PASSWORD env in application'
+                    print("checking pvc")
+                    pvc = dc.model.spec.template.spec.volumes[0]
+                    print("pvc", pvc)
+                    if 'persistentVolumeClaim' not in pvc:
+                        return 'there should be a persistent volume claim of type persistentVolumeClaim in application'
+                    
     except oc.model.OpenShiftPythonException as e:
         return 'there was an connection error to Openshift ' +  str(e)
-
-    url = request.baseUrl
-    r = requests.get(url + "/store/drug/69618-010")
-    print("database get response: ", r.text)
-    if r.status_code != 200:
-        return 'the service get drug should respond with 200 success code, response: ' + str(r.status_code)
-    response = r.json()
-    if response == "":
-        return "the response must not be empty"
-    if response[0]['productNdc'] != '69618-010': 
-        return 'the identifier should be the same from request'
-    if 'genericName' not in response[0]:
-        return 'there should be the generic name field'
-    if 'packageDescription' not in response[0]:
-        return 'there should be the package description'
-    if 'labelerName' not in response[0]:
-        return 'there should be the labelerName'
     return 'ok'
+
+# Use a Database for persistent storage
+# def test_5_persistent_database(request: Request):
+#     appType = request.appType
+#     accountToken = request.accountToken
+#     deployment = request.deployment
+#     openshiftUrl = request.openshiftUrl
+#     # seconds
+#     timeout=90
+
+#     try:
+#         with oc.api_server(openshiftUrl):
+#             with oc.token(accountToken):
+#                 with oc.tls_verify(enable=False):
+#                     print("Using openshift server", openshiftUrl)
+#                     dc = oc.selector(appType + "/" + deployment).object()
+#                     print("Scaling to zero", dc.name())
+#                     oc.invoke('scale', ['--replicas=0', 'dc/' + dc.name()])
+#                     print("Scaling to one", dc.name())
+#                     oc.invoke('scale', ['--replicas=1', 'dc/' + dc.name()])
+#                     dc.refresh() #get updated dc with latest version
+#                     print("Waiting for up to", timeout, "seconds for application", dc.name(), "to be ready")
+#                     with oc.timeout(timeout):
+#                         dc = oc.selector(appType + "/" + deployment)
+#                         dc.until_all(1, success_func=dc_is_ready)
+#                     print("finished rollout for", deployment)
+#     except oc.model.OpenShiftPythonException as e:
+#         return 'there was an connection error to Openshift ' +  str(e)
+
+#     url = request.baseUrl
+#     r = requests.get(url + "/store/drug/69618-010")
+#     print("database get response: ", r.text)
+#     if r.status_code != 200:
+#         return 'the service get drug should respond with 200 success code, response: ' + str(r.status_code)
+#     response = r.json()
+#     if response == "":
+#         return "the response must not be empty"
+#     if response[0]['productNdc'] != '69618-010': 
+#         return 'the identifier should be the same from request'
+#     if 'genericName' not in response[0]:
+#         return 'there should be the generic name field'
+#     if 'packageDescription' not in response[0]:
+#         return 'there should be the package description'
+#     if 'labelerName' not in response[0]:
+#         return 'there should be the labelerName'
+#     return 'ok'
 
 
 def test_6_downloadFile(request: Request):

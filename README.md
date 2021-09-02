@@ -71,6 +71,6 @@ Then you can expose the new app created
 
 And navigate with a web browser at url created, this exposes a swagger UI for test the application, where you can use the openshift url, application name, and token for accesing the cluster.
 
-#### Set timeout for Service
+#### Set timeout for Service in case of errors with timeouts
 
     oc annotate route camel-tester --overwrite haproxy.router.openshift.io/timeout=5m
