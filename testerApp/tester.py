@@ -27,6 +27,7 @@ class Request(BaseModel):
     accountToken: str
     deployment: str
     appType: str
+    openshiftProject: str
 
     class Config:
         schema_extra = {
@@ -35,7 +36,8 @@ class Request(BaseModel):
                 "openshiftUrl": "https://api.shared-na46.openshift.opentlc.com:6443/",
                 "accountToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6IllJVzRHTGUxUVhENDZLRWxYUlBrWkpXTGdBQ3F6Tm9xMHpWSjMxMVVENTQifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJjbWFwLWNhbWVsIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6InJvYm90LXRva2VuLWwydnJwIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6InJvYm90Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiYzY2ZTZiOTEtMGJiNy00MTUwLTlmMDYtZmEyNTFlYjU0NDc0Iiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OmNtYXAtY2FtZWw6cm9ib3QifQ.K_L_9p3yU9OT8IrwGJ4fOHvxW9bOowTGtY5Y3yWw_lV27-kCIoPEKi5EqbMWPvt_E8bqNZDJJWI4HZmmqmgKlcEZOSdDpojFI67ZK06XBd0Tp0KM9JL99GvCMiixHdFNSJNPF30EQQBcSu0u_6TkjeJd256i5ZxrESBs-L1jc7uX-3BxZZ6swjEQcqgDFHeJ7xqQ79yqSqMKFmjWXC96v3eUA-YwjEkKW-unQ_E3lWSjpOAuxgRx-aX6RG5x5ztQr0AiqgBo11IK1HGmP7PbF-9lwjFbOgCt8WN73H-CAfLULvrUXMQnfXtZ68jFzhUmmekXKf9_n2O8xexSIz_60A",
                 "deployment": "camel-workshop",
-                "appType": "deployment"
+                "appType": "deployment",
+                "openshiftProject": "camel-asdf",
             }
         }
 
@@ -51,7 +53,7 @@ def test_app(request: Request):
     response['test_update_drug'] = test_2_update(request)
     response['test_disable_drug'] = test_3_disable(request)
     response['test_upload_file'] = test_4_uploadfile(request)
-    response['test_persistent_database'] = test_5_persistent_database(request)
+    response['test_persistent_data'] = test_5_persistent_database(request)
     response['test_download_file'] = test_6_downloadFile(request)
     return response
 
@@ -136,31 +138,33 @@ def test_5_persistent_database(request: Request):
     accountToken = request.accountToken
     deployment = request.deployment
     openshiftUrl = request.openshiftUrl
+    project = request.openshiftProject
 
     try:
         with oc.api_server(openshiftUrl):
             with oc.token(accountToken):
                 with oc.tls_verify(enable=False):
-                    print("Using openshift server", openshiftUrl)
-                    dc = oc.selector(appType + "/" + deployment).object()
-                    envs = dc.model.spec.template.spec.containers[0].env
-                    envNames = []
-                    for env in envs:
-                        envNames.append(env['name'])
-                    print("enviroment variables:",envNames)
-                    if 'DATABASE_DRIVER' not in envNames:
-                        return 'there should be the DATABASE_DRIVER env in application'
-                    if 'DATABASE_URL' not in envNames:
-                        return 'there should be the DATABASE_URL env in application'
-                    if 'DATABASE_USERNAME' not in envNames:
-                        return 'there should be the DATABASE_USERNAME env in application'
-                    if 'DATABASE_PASSWORD' not in envNames:
-                        return 'there should be the DATABASE_PASSWORD env in application'
-                    print("checking pvc")
-                    pvc = dc.model.spec.template.spec.volumes[0]
-                    print("pvc", pvc)
-                    if 'persistentVolumeClaim' not in pvc:
-                        return 'there should be a persistent volume claim of type persistentVolumeClaim in application'
+                    with oc.project(project), oc.timeout(5*60):
+                        print("Using openshift server", openshiftUrl, "project", project)
+                        dc = oc.selector(appType + "/" + deployment).object()
+                        envs = dc.model.spec.template.spec.containers[0].env
+                        envNames = []
+                        for env in envs:
+                            envNames.append(env['name'])
+                        print("enviroment variables:",envNames)
+                        if 'DATABASE_DRIVER' not in envNames:
+                            return 'there should be the DATABASE_DRIVER env in application'
+                        if 'DATABASE_URL' not in envNames:
+                            return 'there should be the DATABASE_URL env in application'
+                        if 'DATABASE_USERNAME' not in envNames:
+                            return 'there should be the DATABASE_USERNAME env in application'
+                        if 'DATABASE_PASSWORD' not in envNames:
+                            return 'there should be the DATABASE_PASSWORD env in application'
+                        print("checking pvc")
+                        pvc = dc.model.spec.template.spec.volumes[0]
+                        print("pvc", pvc)
+                        if 'persistentVolumeClaim' not in pvc:
+                            return 'there should be a persistent volume claim of type persistentVolumeClaim in application'
                     
     except oc.model.OpenShiftPythonException as e:
         return 'there was an connection error to Openshift ' +  str(e)
