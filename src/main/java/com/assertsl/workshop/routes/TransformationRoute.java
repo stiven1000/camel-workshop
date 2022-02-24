@@ -59,6 +59,7 @@ public class TransformationRoute extends RouteBuilder {
 
         from("direct:disableDrug").routeId("disableDrugRoute")
                 .log("disabling drug ${headers.ncdCode}")
+                .bean("transformationBean","actualizarEstado")
                 //TODO: Update the drug with INACTIVE status
                 .to("jpa:com.assertsl.workshop.domain.DrugStore")
                 .end();
@@ -74,6 +75,10 @@ public class TransformationRoute extends RouteBuilder {
                 .log("Response from FDA API ${body}")
                 .log("Getting required fields")
                 .setHeader("packageDescription", jsonpath("$.results[0].packaging[0].description"))
+                .setHeader("genericName", jsonpath("$.results[0].generic_name"))
+                .setHeader("labelerName", jsonpath("$.results[0].labeler_name"))
+              
+                
                 //TODO: get genericName and labelerName fields
                 .log("Info obtained packageDescription: ${headers.packageDescription}, labelerName: ${headers.labelerName}, genericName: ${headers.genericName}")
                 .end();

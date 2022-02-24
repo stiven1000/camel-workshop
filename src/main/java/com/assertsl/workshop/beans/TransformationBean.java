@@ -25,6 +25,8 @@ public class TransformationBean {
 
     public Map updateDrugParameters(DrugDto drugDto) {
         Map<String, Object> updateParameters = new HashMap<String, Object>();
+        updateParameters.put("price", drugDto.getPrice());
+        updateParameters.put("existences", drugDto.getExistences());
         //TODO: set parameters from dto and update the entity
         return updateParameters;
     }
@@ -35,6 +37,11 @@ public class TransformationBean {
         DataHandler dh = mimeMessage.getDataHandler();
         exchange.getIn().setBody(dh.getInputStream());
         exchange.getIn().setHeader(Exchange.FILE_NAME, dh.getName());
+    }
+    
+    public void actualizarEstado(DrugDto drugDto) {
+ 
+    	drugDto.setStatus("INACTIVE");
     }
 
 
