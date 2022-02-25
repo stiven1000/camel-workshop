@@ -59,9 +59,9 @@ public class TransformationRoute extends RouteBuilder {
 
         from("direct:disableDrug").routeId("disableDrugRoute")
                 .log("disabling drug ${headers.ncdCode}")
-                .bean("transformationBean","actualizarEstado")
+                .setHeader("CamelJpaParameters", method("transformationBean","updateStatus"))
                 //TODO: Update the drug with INACTIVE status
-                .to("jpa:com.assertsl.workshop.domain.DrugStore")
+                .to("jpa:com.assertsl.workshop.domain.DrugStore?useExecuteUpdate=true&query=" + databaseProperties.getDisableDrug())
                 .end();
 
 

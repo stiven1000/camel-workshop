@@ -40,9 +40,16 @@ public class TransformationBean {
         exchange.getIn().setHeader(Exchange.FILE_NAME, dh.getName());
     }
     
-    public void actualizarEstado(DrugDto drugDto) {
- 
-    	drugDto.setStatus("INACTIVE");
+//    public void actualizarEstado(DrugDto drugDto) {
+// 
+//    	drugDto.setStatus("INACTIVE");
+//    }
+    
+    public Map updateStatus(DrugDto drugDto) {
+    	Map<String, Object> updateParameters = new HashMap<String, Object>();
+    	updateParameters.put("status", drugDto.getStatus());
+    	return updateParameters;
+    	
     }
 
 
