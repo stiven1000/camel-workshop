@@ -27,6 +27,7 @@ public class TransformationBean {
         Map<String, Object> updateParameters = new HashMap<String, Object>();
         updateParameters.put("price", drugDto.getPrice());
         updateParameters.put("existences", drugDto.getExistences());
+        updateParameters.put("productNdc", drugDto.getProductNdc());
         //TODO: set parameters from dto and update the entity
         return updateParameters;
     }
